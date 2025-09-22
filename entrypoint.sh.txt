@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Configuration and registration (unattended mode for automation)
+# The --replace flag ensures that if a runner with the same name already exists,
+# it will be replaced (useful for ephemeral runners).
+
+if [ ! -s ".runner" ]; then
+    echo "Configuring runner for the first time..."
+    # Configure the runner
+    ./config.sh \
+        --url "$GITHUB_RUNNER_URL" \
+        --token "$GITHUB_RUNNER_TOKEN" \
+        --name "$GITHUB_RUNNER_NAME" \
+        --labels "$GITHUB_RUNNER_LABELS" \
+        --work "_work" \
+        --unattended \
+        --replace
+else
+    echo "Runner already configured, skipping configuration..."
+fi
+
+echo "Starting GitHub Actions runner..."
+./run.sh
+
