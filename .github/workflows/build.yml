@@ -43,15 +43,15 @@ jobs:
 
       - name: Make package public
         run: |
-          PACKAGE_NAME=${{ github.event.repository.name }}
-          # Convert the package name to lowercase
-          LOWERCASE_PACKAGE_NAME=$(echo "$PACKAGE_NAME" | tr '[:upper:]' '[:lower:]')
-          
+          # Extract the repository name from the `github.repository` context
+          REPO_NAME=${{ github.repository }}
+          PACKAGE_NAME=$(echo "$REPO_NAME" | cut -d'/' -f2 | tr '[:upper:]' '[:lower:]')
+    
           # Use the GitHub CLI (gh) to call the REST API and patch the visibility
           gh api \
             --method PATCH \
             -H "Accept: application/vnd.github.v3+json" \
-            /users/${{ github.repository_owner }}/packages/container/$LOWERCASE_PACKAGE_NAME/visibility \
+            /users/${{ github.repository_owner }}/packages/container/$PACKAGE_NAME/visibility \
             -f visibility=public
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
