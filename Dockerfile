@@ -14,7 +14,7 @@ RUN apt-get update && \
     iputils-ping \
     ca-certificates \
     sudo \
-    bbash \
+    bash \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and extract GitHub Actions runner with the root user
