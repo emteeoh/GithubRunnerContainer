@@ -1,0 +1,54 @@
+name: Build and Push to GHCR
+
+on:
+  push:
+    branches:
+      - 'main'
+  # Uncomment the lines below to trigger the workflow manually from the GitHub UI
+  # workflow_dispatch:
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # This permission is required to change package visibility
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Make package public
+        run: |
+          PACKAGE_NAME=${{ github.event.repository.name }}
+          # Use the GitHub CLI (gh) to call the REST API and patch the visibility
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            /users/${{ github.repository_owner }}/packages/container/$PACKAGE_NAME/visibility \
+            -f visibility=public
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
