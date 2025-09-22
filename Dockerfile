@@ -17,6 +17,8 @@ RUN apt-get update && \
     bash dash\
     && rm -rf /var/lib/apt/lists/*
 
+RUN ln -sf /usr/bin/dash /bin/sh
+
 # Download and extract GitHub Actions runner with the root user
 ARG RUNNER_VERSION="2.325.0"
 RUN curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
