@@ -14,12 +14,6 @@ RUN apt-get update && \
     iputils-ping \
     ca-certificates \
     sudo \
-    libkrb5-3 zlib1g \
-    liblttng-ust1 liblttng-ust0 \
-    libssl1.1$ libssl1.0.2$ libssl1.0.0$ \
-    libicu72 libicu71 libicu70 libicu69 libicu68  \
-    libicu67 libicu66 libicu65 libicu63 libicu60 \
-    libicu57 libicu55 libicu52 \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and extract GitHub Actions runner with the root user
