@@ -4,6 +4,11 @@ FROM ubuntu:22.04
 # Avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN groupadd -r githubrunner && useradd -r -g githubrunner -m -s /bin/bash githubrunner
+WORKDIR /home/githubrunner
+
+
+
 # Install necessary packages
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -17,7 +22,7 @@ RUN apt-get update && \
     bash dash\
     && rm -rf /var/lib/apt/lists/*
 
-RUN ln -sf /bin/dash /bin/sh
+# RUN ln -sf /bin/dash /bin/sh
 
 # Download and extract GitHub Actions runner with the root user
 ARG RUNNER_VERSION="2.325.0"
@@ -32,11 +37,9 @@ RUN curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
 RUN ./bin/installdependencies.sh
 
 # Create the non-root user and switch to it for all subsequent commands.
-RUN groupadd -r githubrunner && useradd -r -g githubrunner -m -s /bin/bash githubrunner
 USER githubrunner
 
 # Set the working directory for the non-root user
-WORKDIR /home/githubrunner
 
 # Create the workspace directory for the runner
 RUN mkdir -p /home/githubrunner/_work
