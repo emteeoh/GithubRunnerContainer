@@ -1,54 +1,59 @@
-# Dockerfile for GitHub Actions self-hosted runner
 FROM ubuntu:22.04
 
-# Avoid interactive prompts during package installation
+# Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Create the non-root user and switch to it for all subsequent commands.
-RUN groupadd -r githubrunner && useradd -r -g githubrunner -m -s /bin/bash githubrunner
-USER githubrunner
-# Set the working directory for the non-root user
-WORKDIR /home/githubrunner
-
-
-
-# Install necessary packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+# Install dependencies
+RUN apt-get update && apt-get install -y \
     curl \
-    jq \
+    wget \
+    unzip \
     git \
-    libicu70 \
-    iputils-ping \
+    jq \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3 \
+    python3-venv \
+    python3-dev \
+    python3-pip \
+    apt-transport-https \
     ca-certificates \
+    gnupg \
+    lsb-release \
+    software-properties-common \
     sudo \
-    bash dash\
     && rm -rf /var/lib/apt/lists/*
 
-# RUN ln -sf /bin/dash /bin/sh
+# Install Docker CLI
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce-cli \
+    && rm -rf /var/lib/apt/lists/*
 
-# Download and extract GitHub Actions runner with the root user
-ARG RUNNER_VERSION="2.325.0"
-RUN curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
-    -L "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" && \
+# Create a user for the runner
+RUN useradd -m -s /bin/bash runner && \
+    usermod -aG sudo runner && \
+    echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Set up the runner directory
+USER runner
+WORKDIR /home/runner
+
+# Download and extract the GitHub Actions runner
+RUN RUNNER_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r '.tag_name' | sed 's/v//') && \
+    curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
     tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz && \
-    rm actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+    rm ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
 
-# Install runner dependencies with the root user
-# This step requires root privileges and must be done before switching users.
-# RUN ./bin/installdependencies.sh
-RUN ./bin/installdependencies.sh
+# Install additional dependencies
+RUN sudo ./bin/installdependencies.sh
 
-# Create the workspace directory for the runner
-RUN mkdir -p /home/githubrunner/_work
+COPY --chmod=755 entrypoint.sh entrypoint.sh
 
-# Copy entrypoint script and set ownership
-COPY --chown=githubrunner:githubrunner --chmod=755 entrypoint.sh entrypoint.sh
+# Expose any ports if needed (none required for basic runner)
+EXPOSE 8080
 
-# Set environment variables
-ENV GITHUB_RUNNER_URL=""
-ENV GITHUB_RUNNER_TOKEN=""
-ENV GITHUB_RUNNER_NAME="HausOfMTORunner"
-ENV GITHUB_RUNNER_LABELS="Linux,X64,self-hosted"
-
+# Set the entrypoint
 ENTRYPOINT ["./entrypoint.sh"]
