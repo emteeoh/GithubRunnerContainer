@@ -4,7 +4,10 @@ FROM ubuntu:22.04
 # Avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Create the non-root user and switch to it for all subsequent commands.
 RUN groupadd -r githubrunner && useradd -r -g githubrunner -m -s /bin/bash githubrunner
+USER githubrunner
+# Set the working directory for the non-root user
 WORKDIR /home/githubrunner
 
 
@@ -35,11 +38,6 @@ RUN curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
 # This step requires root privileges and must be done before switching users.
 # RUN ./bin/installdependencies.sh
 RUN ./bin/installdependencies.sh
-
-# Create the non-root user and switch to it for all subsequent commands.
-USER githubrunner
-
-# Set the working directory for the non-root user
 
 # Create the workspace directory for the runner
 RUN mkdir -p /home/githubrunner/_work
