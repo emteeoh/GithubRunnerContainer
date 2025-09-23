@@ -3,8 +3,6 @@ set -e
 
 echo "GitHub Runner Entrypoint Starting..."
 
-ls -la /home/githubrunner
-
 # Validate required environment variables
 if [[ -z "$GITHUB_RUNNER_URL" ]]; then
     echo "Error: GITHUB_RUNNER_URL is not set"
@@ -15,7 +13,6 @@ if [[ -z "$GITHUB_PAT" ]]; then
     echo "Error: GITHUB_PAT is not set"
     exit 1
 fi
-
 
 # Determine if the URL is for an organization or a repository
 if [[ "$GITHUB_RUNNER_URL" == *"github.com"* ]]; then
@@ -69,7 +66,7 @@ echo "Repository URL: $GITHUB_RUNNER_URL"
 # Configure the runner if not already configured
 if [ ! -f ".runner" ]; then
     echo "Configuring runner for the first time..."
-    /home/githubrunner/config.sh \
+    /home/runner/config.sh \
         --url "$GITHUB_RUNNER_URL" \
         --token "$TOKEN" \
         --name "$GITHUB_RUNNER_NAME" \
@@ -85,12 +82,12 @@ fi
 # Graceful shutdown handler
 cleanup() {
     echo "Removing runner..."
-    /home/githubrunner/config.sh remove --unattended --token "$GITHUB_RUNNER_TOKEN" || true
+    /home/runner/config.sh remove --unattended --token "$GITHUB_RUNNER_TOKEN" || true
 }
 trap 'cleanup' SIGTERM SIGINT
 
 echo "Starting GitHub Actions runner..."
-/home/githubrunner/run.sh &
+/home/runner/run.sh &
 
 # Wait for the background process
 wait $!
