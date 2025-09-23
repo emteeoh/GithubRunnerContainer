@@ -40,19 +40,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Make package public
-        run: |
-          # Extract the repository name from the `github.repository` context
-          REPO_NAME=${{ github.repository }}
-          PACKAGE_NAME=$(echo "$REPO_NAME" | cut -d'/' -f2 | tr '[:upper:]' '[:lower:]')
-          echo $REPO_NAME $PACKAGE_NAME
-    
-          # Use the GitHub CLI (gh) to call the REST API and patch the visibility
-          gh api \
-            --method PATCH \
-            -H "Accept: application/vnd.github.v3+json" \
-            /users/${{ github.repository_owner }}/packages/container/$PACKAGE_NAME/visibility \
-            -f visibility=public
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
