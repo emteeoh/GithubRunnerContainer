@@ -9,10 +9,14 @@ if [[ -z "$GITHUB_RUNNER_URL" ]]; then
     exit 1
 fi
 
+echo $GITHUB_RUNNER_URL
+
 if [[ -z "$GITHUB_PAT" ]]; then
     echo "Error: GITHUB_PAT is not set"
     exit 1
 fi
+
+echo $GITHUB_PAT
 
 # Determine if the URL is for an organization or a repository
 if [[ "$GITHUB_RUNNER_URL" == *"github.com"* ]]; then
