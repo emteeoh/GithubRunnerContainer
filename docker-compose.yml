@@ -1,0 +1,14 @@
+services:
+  runner:
+    #image: ghcr.io/emteeoh/githubrunnercontainer:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "18080:8080"
+    environment:
+      - GITHUB_RUNNER_URL=${GITHUB_RUNNER_URL}
+      - GITHUB_PAT=${GITHUB_PAT}
+      - GITHUB_RUNNER_NAME=${GITHUB_RUNNER_NAME}
+      - GITHUB_RUNNER_LABELS=${GITHUB_RUNNER_LABELS}
+    restart: unless-stopped

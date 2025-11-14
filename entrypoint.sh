@@ -16,7 +16,7 @@ if [[ -z "$GITHUB_PAT" ]]; then
     exit 1
 fi
 
-echo $GITHUB_PAT
+#echo $GITHUB_PAT
 
 # Determine if the URL is for an organization or a repository
 if [[ "$GITHUB_RUNNER_URL" == *"github.com"* ]]; then
