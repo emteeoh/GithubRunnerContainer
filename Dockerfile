@@ -3,10 +3,14 @@ FROM ubuntu:24.04
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install Eclips Adoptium APT Repository for Temurin OpenJDK 21
+RUN apt-get update && apt install -y wget apt-transport-https gpg
+RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
+RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     curl \
-    wget \
     unzip \
     git \
     jq \
@@ -23,8 +27,13 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     software-properties-common \
     sudo \
-    openjdk-21-jdk \
+    temurin-21-jdk \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Eclips Adoptium APT Repository for Temurin
+RUN apt install -y wget apt-transport-https gpg
+RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
+RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
 
 # Install Docker CLI
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
